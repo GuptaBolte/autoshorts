@@ -80,5 +80,9 @@
     "gita-6.26",
     "chain-of-consequences",
     "witness"
-  ]
+  ],
+  "results": {
+    "rendered_at": "2026-10-28T19:39:18.278939+00:00",
+    "status": "draft_ready"
+  }
 }
