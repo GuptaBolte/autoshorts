@@ -41,9 +41,18 @@ jobs:
           python-version: "3.12"
           cache: pip
 
-      - name: Install Python packages
+      - name: Install Python packages (CPU-only torch for the 4K upscaler)
         if: steps.check.outputs.go == 'true'
-        run: pip install -r requirements.txt
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Cache upscaler weights
+        if: steps.check.outputs.go == 'true'
+        uses: actions/cache@v4
+        with:
+          path: models
+          key: upscaler-realesr-general-x4v3
 
       - name: Render and publish
         if: steps.check.outputs.go == 'true'
@@ -61,7 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: videos-${{ github.run_id }}
-          path: out/*.mp4
+          path: out/*_1080.mp4
           if-no-files-found: ignore
           retention-days: 14
 

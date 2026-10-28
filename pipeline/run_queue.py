@@ -50,7 +50,7 @@ def process(path):
         return False
 
     cfg = render.load_channel(job["channel"])
-    video = render.render(path, OUT, offline=os.environ.get("OFFLINE") == "1")
+    videos = render.render(path, OUT, offline=os.environ.get("OFFLINE") == "1")
     job.setdefault("results", {})["rendered_at"] = now().isoformat()
 
     if job.get("mode", "post") == "draft":
@@ -62,13 +62,13 @@ def process(path):
     if "youtube" in platforms:
         if has("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN"):
             from . import upload_youtube
-            job["results"]["youtube"] = upload_youtube.upload(video, job, cfg)
+            job["results"]["youtube"] = upload_youtube.upload(videos["youtube"], job, cfg)
         else:
             job["results"]["youtube"] = "skipped: YouTube secrets not set"
     if "instagram" in platforms:
         if has("IG_USER_ID", "IG_ACCESS_TOKEN"):
             from . import upload_instagram
-            job["results"]["instagram"] = upload_instagram.upload(video, job)
+            job["results"]["instagram"] = upload_instagram.upload(videos["instagram"], job)
         else:
             job["results"]["instagram"] = "skipped: Instagram secrets not set"
     job["results"]["status"] = "posted"

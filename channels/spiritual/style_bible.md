@@ -4,8 +4,9 @@ CHANNEL: Gita ka Gyaan (working name)
 NICHE: spiritual
 VIEWER: Hindi-speaking 18-40 year olds who believe in God and are stuck on a real problem: anger, breakups, career confusion, family pressure, comparison, overthinking. They want guidance that feels both sacred and usable today.
 PROMISE: Every video turns one Gita teaching into one thing you can do today.
-VOICE: Calm, warm, unhurried elder-sibling tone. Respectful "aap" form. Hinglish captions, Hindi (Devanagari) for the TTS so pronunciation stays natural. No slang.
-SIGNATURE: Open on Krishna, close on Krishna, so the video loops cleanly. Cite chapter.verse as on-screen text in the first beat.
+VOICE: Krishna speaks in first person, as in the Gita, addressing the viewer as "Parth" (the viewer is Arjuna). Deep, slow, compassionate, never preachy. Uses "tum" the way Krishna speaks to Arjuna. Shuddh-leaning Hindi (krodh, buddhi, aasakti) for the TTS in Devanagari; captions in Roman Hinglish. No slang.
+KRISHNA'S WORDS: Every line spoken as Krishna must be a faithful paraphrase of an actual verse, and each verse used is cited on screen. Practical advice is only put in Krishna's mouth when a verse supports it (e.g. 6.26 for calming the mind); otherwise drop it. This keeps the channel respectful and accurate, which devotional audiences check.
+SIGNATURE: Open on Krishna looking at the viewer, close on Krishna, so the video loops cleanly. Cite chapter.verse as on-screen text in the first beat. Use {KRISHNA} in visual prompts so the character stays identical across videos.
 STRUCTURE: 25-40 seconds, 4-6 beats: hook (the problem or a bold claim) -> what the verse says -> what it means today -> one practical action -> a closing line that reframes the viewer.
 HOOK MIX: relatable scene 30%, question the viewer already has 25%, direct claim 20%, specific number 15%, stakes 10%.
 
