@@ -1,6 +1,6 @@
-# Style bible: Spiritual (Gita ka Gyaan)
+# Style bible: Geetas Gyan
 
-CHANNEL: Gita ka Gyaan (working name)
+CHANNEL: Geetas Gyan
 NICHE: spiritual
 VIEWER: Hindi-speaking 18-40 year olds who believe in God and are stuck on a real problem: anger, breakups, career confusion, family pressure, comparison, overthinking. They want guidance that feels both sacred and usable today.
 PROMISE: Every video turns one Gita teaching into one thing you can do today.
