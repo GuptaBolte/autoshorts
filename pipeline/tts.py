@@ -66,17 +66,31 @@ def gemini_script(lines: list, out_dir: str, voice: str, style: str, model: str)
     script = "\n".join(f"{i + 1}. {line}" for i, line in enumerate(lines))
     gemini_speak(script, full, voice=voice, style=style_all, model=model)
 
-    res = subprocess.run(["ffmpeg", "-hide_banner", "-i", full, "-af", "silencedetect=noise=-38dB:d=0.7", "-f", "null", "-"],
+    res = subprocess.run(["ffmpeg", "-hide_banner", "-i", full, "-af", "silencedetect=noise=-40dB:d=0.25", "-f", "null", "-"],
                          capture_output=True, text=True)
     starts = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", res.stderr)]
     ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", res.stderr)]
-    gaps = [(e - s, (s + e) / 2) for s, e in zip(starts, ends) if s > 0.3]
     total = duration(full)
-    gaps = [g for g in gaps if g[1] < total - 0.3]
+    gaps = [(e - s, (s + e) / 2) for s, e in zip(starts, ends) if s > 0.3 and (s + e) / 2 < total - 0.3]
     if len(gaps) < len(lines) - 1:
         print(f"[tts] Gemini: found {len(gaps)} pauses for {len(lines)} lines; cannot split")
         return None
-    cuts = sorted(mid for _, mid in sorted(gaps, reverse=True)[: len(lines) - 1])
+    # expected boundary positions from each line's share of the text; pick the best pause near each one
+    weights = [max(len(l), 1) for l in lines]
+    cum, acc = [], 0
+    for w in weights[:-1]:
+        acc += w
+        cum.append(total * acc / sum(weights))
+    cuts, used = [], set()
+    for k, target in enumerate(cum):
+        lo = cuts[-1] if cuts else 0.0
+        cands = [(abs(mid - target) - 1.5 * dur, mid) for dur, mid in gaps if mid > lo and mid not in used]
+        if not cands:
+            print("[tts] Gemini: could not place all line breaks; cannot split")
+            return None
+        _, mid = min(cands)
+        cuts.append(mid)
+        used.add(mid)
     bounds = [0.0] + cuts + [total]
     paths = []
     for i in range(len(lines)):

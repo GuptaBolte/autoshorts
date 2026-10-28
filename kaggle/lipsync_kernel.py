@@ -30,7 +30,7 @@ uvpip = f"uv pip install --python {PY} -q"
 sh("pip install -q uv")
 sh(f"uv venv {VENV} --python 3.10")
 sh(f"{uvpip} torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 --index-url https://download.pytorch.org/whl/cu118")
-sh(f"{uvpip} setuptools wheel numpy==1.23.5 cython")
+sh(f"{uvpip} \"setuptools<70\" wheel numpy==1.23.5 cython")  # newer setuptools dropped pkg_resources
 sh(f"{uvpip} --no-build-isolation basicsr==1.4.2")
 sh(f"{uvpip} face_alignment==1.3.5 imageio==2.19.3 imageio-ffmpeg==0.4.7 librosa==0.9.2 numba resampy==0.3.1 "
    f"pydub==0.25.1 scipy==1.10.1 kornia==0.6.8 tqdm yacs==0.1.8 pyyaml joblib==1.1.0 scikit-image==0.19.3 "
