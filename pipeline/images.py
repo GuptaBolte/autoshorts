@@ -9,6 +9,7 @@ import json
 import os
 import time
 import urllib.parse
+import urllib.error
 import urllib.request
 
 from PIL import Image, ImageDraw, ImageFilter
@@ -35,14 +36,24 @@ def _cloudflare(prompt: str, seed: int) -> Image.Image:
     last = None
     for model in CF_MODELS:
         model = model.strip()
-        payload = {"prompt": prompt, "seed": seed}
         if "flux-1-schnell" in model:
-            payload["steps"] = 8  # square output; framed onto a vertical canvas below
+            payload = {"prompt": prompt[:2000], "steps": 8}  # square output; framed onto a vertical canvas below
         else:
-            payload.update({"width": 1152, "height": 2048, "negative_prompt": NEGATIVE, "num_steps": 30})
+            payload = {"prompt": prompt, "seed": seed, "width": 1152, "height": 2048,
+                       "negative_prompt": NEGATIVE, "num_steps": 30}
         try:
-            ctype, raw = _post_json(f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/{model}",
-                                    payload, {"Authorization": f"Bearer {token}"})
+            url = f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/{model}"
+            for wait in (0, 60, 120):  # free tier has a per-minute rate limit: back off on 429
+                if wait:
+                    print(f"[images] {model} rate-limited, waiting {wait}s")
+                    time.sleep(wait)
+                try:
+                    ctype, raw = _post_json(url, payload, {"Authorization": f"Bearer {token}"})
+                    break
+                except urllib.error.HTTPError as err:
+                    body = err.read().decode(errors="ignore")[:300]
+                    if err.code != 429 or wait == 120:
+                        raise RuntimeError(f"HTTP {err.code}: {body}") from None
             if "json" in ctype:
                 body = json.loads(raw)
                 result = body.get("result", body)

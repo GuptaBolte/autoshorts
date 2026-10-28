@@ -27,7 +27,7 @@ def _k(*args, check=True):
     return r
 
 
-def run(portrait: str, audios: dict, work: str, timeout_min: int = 50) -> dict:
+def run(portrait: str, audios: dict, work: str, timeout_min: int = 75) -> dict:
     """audios: {beat_name: wav_path}. Returns {beat_name: mp4_path} for the clips that succeeded."""
     ds = os.path.join(work, "kaggle_ds")
     kd = os.path.join(work, "kaggle_kernel")
@@ -74,6 +74,8 @@ def run(portrait: str, audios: dict, work: str, timeout_min: int = 50) -> dict:
     log = glob.glob(os.path.join(out, "*.log"))
     if log:
         print("[kaggle] log tail:\n" + open(log[0], errors="ignore").read()[-3000:])
-    clips = {os.path.splitext(os.path.basename(p))[0]: p for p in glob.glob(os.path.join(out, "**", "*.mp4"), recursive=True)}
+    found = glob.glob(os.path.join(out, "out", "*.mp4")) + glob.glob(os.path.join(out, "*.mp4"))
+    clips = {os.path.splitext(os.path.basename(p))[0]: p for p in found
+             if os.path.splitext(os.path.basename(p))[0] in audios}
     print(f"[lipsync] status={status.strip()[:80]} clips={sorted(clips)}")
     return clips
