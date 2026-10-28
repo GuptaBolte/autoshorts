@@ -1,0 +1,61 @@
+{
+  "id": "2026-10-29-gita-anger",
+  "channel": "spiritual",
+  "mode": "draft",
+  "publish_at": null,
+  "title": "Gussa aapko kaise barbaad karta hai? Gita 2.63 #Shorts",
+  "hook": "Krishna ne gusse ke baare mein ek seedhi chain batayi hai.",
+  "language": "hinglish",
+  "duration_target_s": 35,
+  "beats": [
+    {
+      "id": 1,
+      "voiceover": "Krishna ne gusse ke baare mein ek seedhi chain batayi hai.",
+      "tts_text": "कृष्ण ने गुस्से के बारे में एक सीधी चेन बताई है।",
+      "caption": "Krishna ne gusse ki ek chain batayi hai",
+      "on_screen_text": "Gita 2.63",
+      "visual_prompt": "Lord Krishna seated calmly on a chariot at dawn, gentle knowing expression, Kurukshetra battlefield softly blurred behind",
+      "duration_s": 4
+    },
+    {
+      "id": 2,
+      "voiceover": "Gusse se moh paida hota hai. Moh se yaadashat bhatak jaati hai.",
+      "tts_text": "क्रोध से मोह पैदा होता है। मोह से याददाश्त भटक जाती है।",
+      "caption": "Gusse se moh, moh se yaadashat bhatakti hai",
+      "on_screen_text": "",
+      "visual_prompt": "a young man in a modern Indian city at night, face lit by red glow, storm clouds swirling above him, symbolic",
+      "duration_s": 5
+    },
+    {
+      "id": 3,
+      "voiceover": "Yaadashat gayi, toh buddhi gayi. Aur buddhi gayi, toh insaan khud ko kho deta hai.",
+      "tts_text": "स्मृति गई, तो बुद्धि गई। और बुद्धि गई, तो इंसान खुद को खो देता है।",
+      "caption": "Buddhi gayi, toh insaan khud ko kho deta hai",
+      "on_screen_text": "",
+      "visual_prompt": "a clay oil lamp flickering out in strong wind, dark temple interior, dramatic chiaroscuro",
+      "duration_s": 5
+    },
+    {
+      "id": 4,
+      "voiceover": "Isliye agli baar gussa aaye, toh react karne se pehle teen saans lijiye.",
+      "tts_text": "इसलिए अगली बार गुस्सा आए, तो रिएक्ट करने से पहले तीन साँस लीजिए।",
+      "caption": "Agli baar, react se pehle teen saans",
+      "on_screen_text": "3 saans",
+      "visual_prompt": "a person sitting cross-legged by a river at sunrise, eyes closed, breathing calmly, golden mist",
+      "duration_s": 5
+    },
+    {
+      "id": 5,
+      "voiceover": "Gussa aapka nahi hai. Woh bas aata hai, aur chala jaata hai. Aap woh ho jo use dekhta hai.",
+      "tts_text": "गुस्सा आपका नहीं है। वो बस आता है, और चला जाता है। आप वो हो जो उसे देखता है।",
+      "caption": "Aap gussa nahi, aap use dekhne wale ho",
+      "on_screen_text": "",
+      "visual_prompt": "Lord Krishna smiling softly with a peacock feather crown, blessing hand raised, warm halo of light, peaceful",
+      "duration_s": 6
+    }
+  ],
+  "caption": "Bhagavad Gita 2.63 – krodh se moh, moh se smriti-bhram, smriti-bhram se buddhi-naash. Agli baar gussa aaye toh kya karenge? Comment mein likhiye 🙏",
+  "hashtags": ["#BhagavadGita", "#GitaGyan", "#Krishna", "#Spirituality", "#LifeLessons", "#Shorts"],
+  "loop_note": "Last line returns to Krishna, matching the opening shot.",
+  "angle_tags": ["anger", "gita-2.63", "chain-of-consequences", "practical-tip-breathing"]
+}

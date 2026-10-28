@@ -1,0 +1,19 @@
+{
+  "name": "Spiritual (Gita ka Gyaan)",
+  "voice": "hi-IN-MadhurNeural",
+  "voice_rate": "-4%",
+  "voice_pitch": "-2Hz",
+  "visual_style": "reverent devotional Indian painting, divine soft golden light, rich colors, serene, highly detailed, cinematic vertical composition, no text, no watermark",
+  "image_model": "flux",
+  "music_dir": "assets/music/spiritual",
+  "music_volume": 0.12,
+  "caption_font": "DejaVu Sans",
+  "beat_pad_s": 0.25,
+  "platforms": ["youtube", "instagram"],
+  "youtube": {
+    "category_id": "22",
+    "default_tags": ["Bhagavad Gita", "Gita Gyan", "Krishna", "Spirituality", "Life Lessons", "Shorts"],
+    "made_for_kids": false,
+    "contains_synthetic_media": true
+  }
+}
