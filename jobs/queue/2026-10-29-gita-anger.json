@@ -16,7 +16,8 @@
       "caption": "Parth, krodh kahan se janm leta hai?",
       "on_screen_text": "Gita 2.62-63",
       "visual_prompt": "close-up portrait of {KRISHNA}, looking directly at the viewer with calm compassionate eyes, sunrise behind",
-      "duration_s": 4
+      "duration_s": 4,
+      "talking": true
     },
     {
       "id": 2,
@@ -25,7 +26,8 @@
       "caption": "Chintan se aasakti, aasakti se kaamna, kaamna toote toh krodh",
       "on_screen_text": "",
       "visual_prompt": "a young man in a modern Indian city at night staring at his phone, red glow on his face, storm clouds swirling above him, symbolic",
-      "duration_s": 7
+      "duration_s": 7,
+      "talking": false
     },
     {
       "id": 3,
@@ -34,7 +36,8 @@
       "caption": "Krodh se moh, moh se smriti-bhram, phir buddhi ka naash",
       "on_screen_text": "",
       "visual_prompt": "a clay diya lamp flickering out in a strong wind inside a dark ancient temple, dramatic chiaroscuro",
-      "duration_s": 5
+      "duration_s": 5,
+      "talking": false
     },
     {
       "id": 4,
@@ -42,8 +45,9 @@
       "tts_text": "और जिसकी बुद्धि नष्ट हो जाए, पार्थ, वह स्वयं को खो देता है।",
       "caption": "Buddhi gayi, toh swayam ko kho diya",
       "on_screen_text": "",
-      "visual_prompt": "{KRISHNA} on a chariot at Kurukshetra, speaking gently to the warrior Arjuna who sits with his head bowed, golden dust in the air",
-      "duration_s": 5
+      "visual_prompt": "close-up portrait of {KRISHNA}, speaking gently, looking at the viewer",
+      "duration_s": 5,
+      "talking": true
     },
     {
       "id": 5,
@@ -52,7 +56,8 @@
       "caption": "Mann bhatke, toh use shaanti se waapas laao",
       "on_screen_text": "Gita 6.26",
       "visual_prompt": "a person meditating by the Yamuna river at dawn, eyes closed, calm breath, golden mist, a faint divine glow around them",
-      "duration_s": 5
+      "duration_s": 5,
+      "talking": false
     },
     {
       "id": 6,
@@ -61,7 +66,8 @@
       "caption": "Tum krodh nahi, tum uske saakshi ho",
       "on_screen_text": "",
       "visual_prompt": "close-up portrait of {KRISHNA}, soft smile, blessing hand raised, warm halo of light, peaceful, looking at the viewer",
-      "duration_s": 6
+      "duration_s": 6,
+      "talking": true
     }
   ],
   "caption": "Gita 2.62-63: chintan se aasakti, aasakti se kaamna, kaamna se krodh, krodh se moh, moh se smriti-bhram, aur buddhi ka naash. Gita 6.26: bhatakte mann ko waapas laao. Aaj aap kis baat par gussa hue? 🙏",
@@ -80,9 +86,5 @@
     "gita-6.26",
     "chain-of-consequences",
     "witness"
-  ],
-  "results": {
-    "rendered_at": "2026-10-28T19:39:18.278939+00:00",
-    "status": "draft_ready"
-  }
+  ]
 }
