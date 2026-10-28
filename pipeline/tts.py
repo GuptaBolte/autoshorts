@@ -1,5 +1,6 @@
 """Text-to-speech with Microsoft Edge neural voices (free, no API key)."""
 import asyncio
+import os
 import subprocess
 
 
@@ -8,6 +9,50 @@ async def _speak(text: str, voice: str, rate: str, pitch: str, out_path: str):
 
     communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
     await communicate.save(out_path)
+
+
+def gemini_speak(text: str, out_path: str, voice: str = "Charon", style: str = "",
+                 model: str = "gemini-2.5-flash-preview-tts", retries: int = 3) -> str:
+    """Natural, directable Hindi speech from Google Gemini TTS (free tier). Secret: GEMINI_API_KEY."""
+    import base64
+    import json
+    import time
+    import urllib.request
+
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        raise RuntimeError("GEMINI_API_KEY not set")
+    prompt = f"{style.strip()}\n\n{text}" if style else text
+    body = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {
+            "responseModalities": ["AUDIO"],
+            "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}},
+        },
+    }
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+    last = None
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, data=json.dumps(body).encode(), method="POST",
+                                         headers={"Content-Type": "application/json", "x-goog-api-key": key})
+            with urllib.request.urlopen(req, timeout=180) as resp:
+                data = json.loads(resp.read())
+            part = data["candidates"][0]["content"]["parts"][0]["inlineData"]
+            pcm = out_path + ".pcm"
+            with open(pcm, "wb") as f:
+                f.write(base64.b64decode(part["data"]))
+            rate = 24000
+            if "rate=" in part.get("mimeType", ""):
+                rate = int(part["mimeType"].split("rate=")[1].split(";")[0])
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "s16le", "-ar", str(rate), "-ac", "1",
+                            "-i", pcm, out_path], check=True)
+            os.remove(pcm)
+            return out_path
+        except Exception as exc:
+            last = exc
+            time.sleep(20 * (attempt + 1))  # free tier rate limits are per minute
+    raise RuntimeError(f"Gemini TTS failed: {last}")
 
 
 def speak(text: str, voice: str, out_path: str, rate: str = "+0%", pitch: str = "+0Hz", retries: int = 3):
@@ -31,6 +76,13 @@ VOICE_FX = {
         "[main][low]amix=inputs=2:duration=first:normalize=0,"
         "aecho=0.85:0.55:45|85|130:0.28|0.18|0.10,"
         "acompressor=threshold=0.12:ratio=3:attack=10:release=200,loudnorm=I=-15:TP=-1.5:LRA=9"
+    ),
+    # For an already-natural voice: keep it human, add only a little depth and a soft hall around it.
+    "divine_natural": (
+        "[0:a]aresample=48000,asetrate=48000*0.955,aresample=48000,atempo=1.047,"
+        "bass=g=3:f=110:w=0.6,equalizer=f=3500:t=q:w=1.2:g=-1.5,"
+        "aecho=0.9:0.4:55|100:0.16|0.09,"
+        "acompressor=threshold=0.15:ratio=2.5:attack=15:release=250,loudnorm=I=-15:TP=-1.5:LRA=9"
     ),
     "none": "[0:a]aresample=48000,loudnorm=I=-15:TP=-1.5",
 }

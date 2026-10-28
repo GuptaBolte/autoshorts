@@ -70,12 +70,23 @@ def render(job_path: str, out_dir: str, offline: bool = False) -> dict:
     for i, beat in enumerate(job["beats"]):
         # 1) voice (tts_text lets Devanagari drive TTS while captions stay in Roman Hinglish)
         raw = os.path.join(work, f"b{i:02d}.mp3")
+        text = beat.get("tts_text") or beat["voiceover"]
+        fx = cfg.get("voice_fx", "none")
         if offline:
             tts.silence(beat.get("duration_s", 4), raw)
         else:
-            tts.speak(beat.get("tts_text") or beat["voiceover"], cfg["voice"], raw,
-                      rate=cfg.get("voice_rate", "+0%"), pitch=cfg.get("voice_pitch", "+0Hz"))
-        voice = tts.apply_fx(raw, os.path.join(work, f"v{i:02d}.wav"), cfg.get("voice_fx", "none"))
+            spoken = False
+            g = cfg.get("gemini_tts")
+            if g and os.environ.get("GEMINI_API_KEY"):
+                try:
+                    tts.gemini_speak(text, raw, voice=g.get("voice", "Charon"), style=g.get("style", ""),
+                                     model=g.get("model", "gemini-2.5-flash-preview-tts"))
+                    fx, spoken = g.get("voice_fx", "divine_natural"), True
+                except Exception as exc:
+                    print(f"[tts] Gemini failed, falling back to edge-tts: {exc}")
+            if not spoken:
+                tts.speak(text, cfg["voice"], raw, rate=cfg.get("voice_rate", "+0%"), pitch=cfg.get("voice_pitch", "+0Hz"))
+        voice = tts.apply_fx(raw, os.path.join(work, f"v{i:02d}.wav"), fx)
         seconds = tts.duration(voice) + pad
         voices.append((voice, seconds))
 

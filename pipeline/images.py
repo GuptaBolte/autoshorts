@@ -1,44 +1,100 @@
-"""Free image generation via Pollinations (no API key), with an offline fallback."""
+"""Image generation. Primary: Cloudflare Workers AI (free tier, no watermark).
+Fallback: Pollinations (free, may watermark). Last resort: a plain gradient.
+
+Secrets for Cloudflare: CF_ACCOUNT_ID, CF_API_TOKEN.
+"""
+import base64
+import io
+import json
+import os
 import time
 import urllib.parse
 import urllib.request
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 W, H = 1080, 1920
+CF_MODELS = os.environ.get(
+    "CF_IMAGE_MODELS", "@cf/leonardo/lucid-origin,@cf/black-forest-labs/flux-1-schnell"
+).split(",")
+NEGATIVE = ("female, woman, feminine face, blue hair, nudity, bare chest, cleavage, deformed hands, extra fingers, "
+            "text, watermark, logo, cartoon, disrespectful")
 
 
-def generate(prompt: str, out_path: str, seed: int = 1, model: str = "flux", retries: int = 3) -> str:
-    url = (
-        "https://image.pollinations.ai/prompt/"
-        + urllib.parse.quote(prompt)
-        + f"?width={W}&height={H}&seed={seed}&model={model}&nologo=true&enhance=false"
-    )
+def _post_json(url, payload, headers, timeout=180):
+    req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", **headers})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.headers.get("Content-Type", ""), resp.read()
+
+
+def _cloudflare(prompt: str, seed: int) -> Image.Image:
+    acct, token = os.environ.get("CF_ACCOUNT_ID"), os.environ.get("CF_API_TOKEN")
+    if not (acct and token):
+        raise RuntimeError("Cloudflare secrets not set")
     last = None
-    for attempt in range(retries):
+    for model in CF_MODELS:
+        model = model.strip()
+        payload = {"prompt": prompt, "seed": seed}
+        if "flux-1-schnell" in model:
+            payload["steps"] = 8  # square output; framed onto a vertical canvas below
+        else:
+            payload.update({"width": 1152, "height": 2048, "negative_prompt": NEGATIVE, "num_steps": 30})
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "autoshorts/1.0"})
-            with urllib.request.urlopen(req, timeout=180) as resp:
-                data = resp.read()
-            with open(out_path, "wb") as f:
-                f.write(data)
-            Image.open(out_path).verify()  # make sure we got a real image
-            _normalize(out_path)
-            return out_path
+            ctype, raw = _post_json(f"https://api.cloudflare.com/client/v4/accounts/{acct}/ai/run/{model}",
+                                    payload, {"Authorization": f"Bearer {token}"})
+            if "json" in ctype:
+                body = json.loads(raw)
+                result = body.get("result", body)
+                b64 = result.get("image") if isinstance(result, dict) else None
+                if not b64:
+                    raise RuntimeError(f"no image in response: {str(body)[:300]}")
+                raw = base64.b64decode(b64)
+            print(f"[images] cloudflare {model}")
+            return Image.open(io.BytesIO(raw)).convert("RGB")
         except Exception as exc:
             last = exc
-            time.sleep(5 * (attempt + 1))
-    print(f"[images] generation failed ({last}); using fallback background")
+            print(f"[images] {model} failed: {exc}")
+    raise RuntimeError(f"all Cloudflare models failed: {last}")
+
+
+def _pollinations(prompt: str, seed: int) -> Image.Image:
+    url = ("https://image.pollinations.ai/prompt/" + urllib.parse.quote(prompt)
+           + f"?width={W}&height={H}&seed={seed}&model=flux&nologo=true")
+    headers = {"User-Agent": "autoshorts/1.0"}
+    if os.environ.get("POLLINATIONS_TOKEN"):
+        headers["Authorization"] = f"Bearer {os.environ['POLLINATIONS_TOKEN']}"
+    with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=180) as resp:
+        return Image.open(io.BytesIO(resp.read())).convert("RGB")
+
+
+def _to_vertical(img: Image.Image) -> Image.Image:
+    """Fill 1080x1920. Wide/square images sit on a blurred, darkened copy of themselves."""
+    if img.height / img.width >= 1.6:
+        ratio = max(W / img.width, H / img.height)
+        img = img.resize((int(img.width * ratio) + 1, int(img.height * ratio) + 1), Image.LANCZOS)
+        left, top = (img.width - W) // 2, (img.height - H) // 2
+        return img.crop((left, top, left + W, top + H))
+    bg = img.resize((H, H), Image.LANCZOS).crop(((H - W) // 2, 0, (H - W) // 2 + W, H))
+    bg = bg.filter(ImageFilter.GaussianBlur(40)).point(lambda p: int(p * 0.55))
+    fg = img.resize((W, int(img.height * W / img.width)), Image.LANCZOS)
+    bg.paste(fg, (0, (H - fg.height) // 2))
+    return bg
+
+
+def generate(prompt: str, out_path: str, seed: int = 1, model: str = "flux", retries: int = 2) -> str:
+    for provider in (_cloudflare, _pollinations):
+        for attempt in range(retries):
+            try:
+                _to_vertical(provider(prompt, seed)).save(out_path, "JPEG", quality=94)
+                return out_path
+            except Exception as exc:
+                print(f"[images] {provider.__name__} attempt {attempt + 1} failed: {exc}")
+                if "secrets not set" in str(exc):
+                    break
+                time.sleep(4 * (attempt + 1))
+    print("[images] all providers failed; using fallback background")
     return fallback(out_path, seed)
-
-
-def _normalize(path: str):
-    """Crop/resize to exactly 1080x1920 so FFmpeg gets a predictable input."""
-    img = Image.open(path).convert("RGB")
-    ratio = max(W / img.width, H / img.height)
-    img = img.resize((int(img.width * ratio) + 1, int(img.height * ratio) + 1), Image.LANCZOS)
-    left, top = (img.width - W) // 2, (img.height - H) // 2
-    img.crop((left, top, left + W, top + H)).save(path, "JPEG", quality=92)
 
 
 def fallback(out_path: str, seed: int = 1) -> str:

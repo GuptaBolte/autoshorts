@@ -3,12 +3,18 @@
   "resolution": [2160, 3840],
   "ai_upscale": true,
   "voice": "hi-IN-MadhurNeural",
-  "voice_rate": "-12%",
+  "voice_rate": "-5%",
   "voice_pitch": "-6Hz",
   "voice_fx": "divine",
-  "visual_style": "reverent devotional Indian painting, divine soft golden light, rich saffron blue and gold palette, serene, ultra detailed, cinematic vertical composition, no text, no watermark",
+  "gemini_tts": {
+    "model": "gemini-2.5-flash-preview-tts",
+    "voice": "Charon",
+    "style": "Read the following Hindi lines as Lord Krishna speaking to Arjuna: a deep, warm, mature male voice, calm and unhurried, compassionate and quietly powerful, with natural pauses. Speak it, do not sing it:",
+    "voice_fx": "divine_natural"
+  },
+  "visual_style": "in the style of a Raja Ravi Varma oil painting, traditional Indian devotional art, divine soft golden light, rich saffron blue and gold palette, serene, ultra detailed, cinematic vertical composition, no text, no watermark",
   "characters": {
-    "KRISHNA": "Lord Krishna, blue-skinned, peacock feather crown, yellow silk pitambar, gentle knowing smile, golden halo, holding a bansuri flute"
+    "KRISHNA": "Lord Krishna as a handsome young man, masculine face, deep blue skin, black curly hair, tall golden crown with a peacock feather, fully dressed in a yellow silk pitambar and angavastram, gold jewellery and vaijayanti garland, gentle knowing smile, golden halo, holding a bansuri flute"
   },
   "image_model": "flux",
   "music_dir": "assets/music/spiritual",
