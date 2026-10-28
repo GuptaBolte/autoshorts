@@ -55,6 +55,39 @@ def gemini_speak(text: str, out_path: str, voice: str = "Charon", style: str = "
     raise RuntimeError(f"Gemini TTS failed: {last}")
 
 
+def gemini_script(lines: list, out_dir: str, voice: str, style: str, model: str):
+    """One Gemini request for the whole script (the free tier allows very few requests per minute),
+    then split it back into one file per line at the longest pauses. Returns paths, or None if it can't split cleanly."""
+    import re
+
+    full = os.path.join(out_dir, "gemini_full.wav")
+    style_all = (style.strip() + " Pause for about two full seconds between each numbered line, "
+                 "and do not read the numbers aloud.")
+    script = "\n".join(f"{i + 1}. {line}" for i, line in enumerate(lines))
+    gemini_speak(script, full, voice=voice, style=style_all, model=model)
+
+    res = subprocess.run(["ffmpeg", "-hide_banner", "-i", full, "-af", "silencedetect=noise=-38dB:d=0.7", "-f", "null", "-"],
+                         capture_output=True, text=True)
+    starts = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", res.stderr)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", res.stderr)]
+    gaps = [(e - s, (s + e) / 2) for s, e in zip(starts, ends) if s > 0.3]
+    total = duration(full)
+    gaps = [g for g in gaps if g[1] < total - 0.3]
+    if len(gaps) < len(lines) - 1:
+        print(f"[tts] Gemini: found {len(gaps)} pauses for {len(lines)} lines; cannot split")
+        return None
+    cuts = sorted(mid for _, mid in sorted(gaps, reverse=True)[: len(lines) - 1])
+    bounds = [0.0] + cuts + [total]
+    paths = []
+    for i in range(len(lines)):
+        p = os.path.join(out_dir, f"g{i:02d}.wav")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", full, "-ss", f"{bounds[i]:.3f}",
+                        "-to", f"{bounds[i + 1]:.3f}", "-af", "silenceremove=start_periods=1:start_threshold=-45dB,"
+                        "areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse", p], check=True)
+        paths.append(p)
+    return paths
+
+
 def speak(text: str, voice: str, out_path: str, rate: str = "+0%", pitch: str = "+0Hz", retries: int = 3):
     last = None
     for _ in range(retries):

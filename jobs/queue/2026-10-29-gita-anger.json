@@ -27,7 +27,7 @@
       "on_screen_text": "",
       "visual_prompt": "a young man in a modern Indian city at night staring at his phone, red glow on his face, storm clouds swirling above him, symbolic",
       "duration_s": 7,
-      "talking": false
+      "talking": true
     },
     {
       "id": 3,
@@ -37,7 +37,7 @@
       "on_screen_text": "",
       "visual_prompt": "a clay diya lamp flickering out in a strong wind inside a dark ancient temple, dramatic chiaroscuro",
       "duration_s": 5,
-      "talking": false
+      "talking": true
     },
     {
       "id": 4,
@@ -57,7 +57,7 @@
       "on_screen_text": "Gita 6.26",
       "visual_prompt": "a person meditating by the Yamuna river at dawn, eyes closed, calm breath, golden mist, a faint divine glow around them",
       "duration_s": 5,
-      "talking": false
+      "talking": true
     },
     {
       "id": 6,

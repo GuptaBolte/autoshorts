@@ -25,6 +25,8 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main   # always the latest queue, never a stale commit
 
       - name: Skip if queue is empty
         id: check

@@ -52,7 +52,7 @@ def _cloudflare(prompt: str, seed: int) -> Image.Image:
                     break
                 except urllib.error.HTTPError as err:
                     body = err.read().decode(errors="ignore")[:300]
-                    if err.code != 429 or wait == 120:
+                    if err.code != 429 or wait == 120 or "daily free allocation" in body:
                         raise RuntimeError(f"HTTP {err.code}: {body}") from None
             if "json" in ctype:
                 body = json.loads(raw)
@@ -66,6 +66,8 @@ def _cloudflare(prompt: str, seed: int) -> Image.Image:
         except Exception as exc:
             last = exc
             print(f"[images] {model} failed: {exc}")
+            if "daily free allocation" in str(exc):
+                raise RuntimeError("Cloudflare daily free allowance used up (resets 00:00 UTC)") from None
     raise RuntimeError(f"all Cloudflare models failed: {last}")
 
 
@@ -101,7 +103,7 @@ def generate(prompt: str, out_path: str, seed: int = 1, model: str = "flux", ret
                 return out_path
             except Exception as exc:
                 print(f"[images] {provider.__name__} attempt {attempt + 1} failed: {exc}")
-                if "secrets not set" in str(exc):
+                if "secrets not set" in str(exc) or "allowance used up" in str(exc) or "402" in str(exc):
                     break
                 time.sleep(4 * (attempt + 1))
     print("[images] all providers failed; using fallback background")

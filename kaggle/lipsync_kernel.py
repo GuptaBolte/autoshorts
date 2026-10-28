@@ -12,7 +12,7 @@ import shutil
 import subprocess
 import sys
 
-IN = sorted(glob.glob("/kaggle/input/*"))[0]
+IN = "/kaggle/input"  # dataset mount layout varies, so search it recursively
 WORK = "/kaggle/working"
 OUT = f"{WORK}/out"
 ST = "/tmp/SadTalker"          # outside /kaggle/working so it never lands in the output
@@ -40,8 +40,11 @@ sh(f"git clone --depth 1 https://github.com/OpenTalker/SadTalker {ST}")
 os.chdir(ST)
 sh("bash scripts/download_models.sh")
 
-portrait = next(p for p in glob.glob(f"{IN}/*") if p.lower().endswith((".jpg", ".jpeg", ".png")))
-wavs = sorted(glob.glob(f"{IN}/*.wav"))
+sh(f"find {IN} -maxdepth 6 | head -50")
+files = glob.glob(f"{IN}/**/*", recursive=True)
+portrait = next(p for p in files if p.lower().endswith((".jpg", ".jpeg", ".png")))
+wavs = sorted(p for p in files if p.lower().endswith(".wav"))
+print("portrait:", portrait, "wavs:", wavs, flush=True)
 failed = []
 for wav in wavs:
     name = os.path.splitext(os.path.basename(wav))[0]
