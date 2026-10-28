@@ -1,0 +1,25 @@
+name: portrait-candidates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install Pillow
+      - name: Generate candidates
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+        run: python tools/portrait_candidates.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portraits-${{ github.run_id }}
+          path: out/portraits/*.jpg
+          retention-days: 14

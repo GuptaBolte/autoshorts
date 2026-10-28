@@ -7,11 +7,12 @@ import glob
 import json
 import os
 import random
+import shutil
 import subprocess
 import sys
 import zlib
 
-from . import captions, images, tts, upscale
+from . import captions, images, lipsync, tts, upscale
 
 FPS = 30
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -36,6 +37,19 @@ def motion_clip(img: str, seconds: float, out: str, variant: int, w: int, h: int
     )
     run(["ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-framerate", str(FPS), "-i", img, "-vf", vf,
          "-frames:v", str(frames), "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", out])
+
+
+def talking_clip(src: str, seconds: float, out: str, w: int, h: int):
+    """Fit a lip-sync clip to the frame (cover-crop), very slow push-in, hold the last frame to the beat length."""
+    frames = max(int(round(seconds * FPS)), 1)
+    vf = (
+        f"fps={FPS},scale={w}:{h}:force_original_aspect_ratio=increase:flags=lanczos,crop={w}:{h},"
+        f"tpad=stop_mode=clone:stop_duration=5,"
+        f"scale=w='trunc({w}*(1+0.04*t/{seconds:.3f})/2)*2':h='trunc({h}*(1+0.04*t/{seconds:.3f})/2)*2':eval=frame,"
+        f"crop={w}:{h}:(iw-{w})/2:(ih-{h})/2,setsar=1,format=yuv420p"
+    )
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-vf", vf, "-an", "-frames:v", str(frames),
+         "-c:v", "libx264", "-preset", "veryfast", "-crf", "16", out])
 
 
 def ambient_bed(cfg: dict, job: dict, seconds: float, work: str):
@@ -90,16 +104,34 @@ def render(job_path: str, out_dir: str, offline: bool = False) -> dict:
         seconds = tts.duration(voice) + pad
         voices.append((voice, seconds))
 
-        # 2) image -> 4K -> motion clip
-        img = os.path.join(work, f"b{i:02d}.jpg")
-        if offline:
-            images.fallback(img, i)
-        else:
-            images.generate(visual_prompt(beat, cfg), img, seed=zlib.crc32(f"{job['id']}:{i}".encode()) % 100000,
-                            model=cfg.get("image_model", "flux"))
-        upscale.to_size(img, W, H, use_ai=cfg.get("ai_upscale", True))
+    # 2) talking beats: Krishna's fixed portrait lip-synced on a free Kaggle GPU
+    talking = {}
+    portrait = os.path.join(ROOT, cfg.get("portrait", ""))
+    want = {f"b{i:02d}": voices[i][0] for i, b in enumerate(job["beats"]) if b.get("talking")}
+    if want and not offline and cfg.get("portrait") and os.path.exists(portrait) and lipsync.available():
+        try:
+            talking = lipsync.run(portrait, want, work)
+        except Exception as exc:
+            print(f"[lipsync] failed, using still images instead: {exc}")
+
+    # 3) visuals per beat
+    for i, beat in enumerate(job["beats"]):
+        seconds = voices[i][1]
         clip = os.path.join(work, f"b{i:02d}.mp4")
-        motion_clip(img, seconds, clip, i, W, H)
+        name = f"b{i:02d}"
+        if name in talking:
+            talking_clip(talking[name], seconds, clip, W, H)
+        else:
+            img = os.path.join(work, f"b{i:02d}.jpg")
+            if offline:
+                images.fallback(img, i)
+            elif beat.get("talking") and os.path.exists(portrait):
+                shutil.copy(portrait, img)  # keep Krishna's face consistent even without lip-sync
+            else:
+                images.generate(visual_prompt(beat, cfg), img, seed=zlib.crc32(f"{job['id']}:{i}".encode()) % 100000,
+                                model=cfg.get("image_model", "flux"))
+            upscale.to_size(img, W, H, use_ai=cfg.get("ai_upscale", True))
+            motion_clip(img, seconds, clip, i, W, H)
         clips.append(clip)
 
         timeline.append({"start": t, "end": t + seconds, "caption": beat.get("caption") or beat["voiceover"],

@@ -1,6 +1,9 @@
 {
   "name": "Geetas Gyan",
-  "resolution": [2160, 3840],
+  "resolution": [
+    2160,
+    3840
+  ],
   "ai_upscale": true,
   "voice": "hi-IN-MadhurNeural",
   "voice_rate": "-5%",
@@ -24,11 +27,23 @@
   "drone_volume": 0.5,
   "caption_font": "DejaVu Sans",
   "beat_pad_s": 0.35,
-  "platforms": ["youtube", "instagram"],
+  "platforms": [
+    "youtube",
+    "instagram"
+  ],
   "youtube": {
     "category_id": "22",
-    "default_tags": ["Bhagavad Gita", "Gita Gyan", "Krishna", "Krishna Vani", "Spirituality", "Life Lessons", "Shorts"],
+    "default_tags": [
+      "Bhagavad Gita",
+      "Gita Gyan",
+      "Krishna",
+      "Krishna Vani",
+      "Spirituality",
+      "Life Lessons",
+      "Shorts"
+    ],
     "made_for_kids": false,
     "contains_synthetic_media": true
-  }
+  },
+  "portrait": "assets/characters/krishna.jpg"
 }
