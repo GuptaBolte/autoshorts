@@ -36,7 +36,12 @@ def run(portrait: str, audios: dict, work: str, timeout_min: int = 75) -> dict:
         shutil.rmtree(d, ignore_errors=True)
         os.makedirs(d)
 
-    shutil.copy(portrait, os.path.join(ds, "portrait" + os.path.splitext(portrait)[1]))
+    # SadTalker's face enhancer upscales every whole frame 2x, so a smaller source keeps the GPU step fast;
+    # the renderer brings the result up to 4K afterwards.
+    from PIL import Image
+    src = Image.open(portrait).convert("RGB")
+    scale = 960 / src.height
+    src.resize((int(src.width * scale) // 2 * 2, 960), Image.LANCZOS).save(os.path.join(ds, "portrait.jpg"), quality=95)
     for name, wav in audios.items():
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", wav, "-ar", "16000", "-ac", "1",
                         os.path.join(ds, f"{name}.wav")], check=True)
